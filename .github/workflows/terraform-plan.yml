@@ -1,0 +1,32 @@
+name: Terraform Plan
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS Credentials (INLINE - NOT SAFE)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: AKIA2HOE25LB33RILPRB
+          aws-secret-access-key: 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
+          aws-region: us-east-1
+
+      - name: Terraform Init (with backend)
+        run: terraform init -backend-config=dev-backend.hcl
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan
