@@ -1,0 +1,35 @@
+name: Terraform Plan
+
+on:
+  workflow_dispatch:                  # This allows you to manually trigger the workflow from the GitHub Actions tab in your repository. You can also specify other triggers like push or pull_request if you want the workflow to run automatically on those events.
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest            # This specifies the type of runner to use for the job. In this case, we're using the latest version of Ubuntu.
+
+    defaults:
+      run:
+        working-directory: .          #  by default, all terraform commands will run in the repository root, we no need to specify the path to the terraform code
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3     # This step checks out the code from the repository so that the workflow can access the Terraform configuration files.
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2                    # This step sets up the Terraform CLI in the GitHub Actions environment, allowing you to run Terraform commands in subsequent steps.
+
+      - name: Configure AWS Credentials (INLINE - NOT SAFE)
+        uses: aws-actions/configure-aws-credentials@v4        # This step configures the AWS credentials needed for Terraform to interact with AWS services. The credentials are provided inline, which is not recommended for security reasons. In a production environment, you should use GitHub Secrets to store sensitive information like AWS access keys.
+        with:
+          aws-access-key-id: AKIA2HOE25LB33RILPRB
+          aws-secret-access-key: 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
+          aws-region: us-east-1
+
+      - name: Terraform Init (with backend)                   # This step initializes the Terraform working directory and configures the backend using the specified configuration file (dev-backend.hcl). The backend configuration file typically contains settings for remote state storage, such as an S3 bucket and DynamoDB table for state locking.
+        run: terraform init -backend-config=dev-backend.hcl
+
+      - name: Terraform Validate                              # This step validates the Terraform configuration files to ensure that they are syntactically correct and internally consistent. It checks for any errors in the configuration before proceeding to the planning stage.
+        run: terraform validate
+
+      - name: Terraform Plan                                  # This step generates an execution plan for Terraform, showing what actions will be taken to achieve the desired state defined in the configuration files. It allows you to review the changes that will be made before applying them.
+        run: terraform plan
