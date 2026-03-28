@@ -4,33 +4,29 @@ on:
   workflow_dispatch:
     inputs:
       environment:
+        description: "Select Environment"
         type: choice
-        options: [dev, stage, prod]
+        options:
+          - dev
+          - stage
+          - prod
         default: dev
 
 jobs:
   authorize:
     runs-on: ubuntu-latest
-    # steps:
-    #   - name: Check User Authorization
-    #     run: |
-    #       ALLOWED_USERS="ganapathi surya"
-    #       if [[ ! $ALLOWED_USERS =~ (^|[[:space:]])${ { github.actor } }($|[[:space:]]) ]]; then
-    #         echo "User ${{ github.actor }} is not authorized to run this pipeline."
-    #         exit 1
-    #       fi
 
     env:
-      # 👇 Define users cleanly here
-      ALLOWED_USERS: "kganapathi6008 surya john"
-
-
+      # 👇 Comma-separated users
+      ALLOWED_USERS: "kganapathi6008,surya,john"
 
     steps:
       - name: Check User Authorization
         run: |
           ACTOR="${{ github.actor }}"
-          USERS=($ALLOWED_USERS)
+
+          # Convert comma-separated string → array
+          IFS=',' read -ra USERS <<< "$ALLOWED_USERS"
 
           echo "Triggered by: $ACTOR"
           echo "Allowed users: ${USERS[@]}"
@@ -45,12 +41,10 @@ jobs:
           echo "User $ACTOR is not authorized to run this pipeline."
           exit 1
 
-
   terraform:
-    needs: authorize  # Only runs if the 'authorize' job succeeds
+    needs: authorize
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    # ... rest of your steps ...
 
     env:
       BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
