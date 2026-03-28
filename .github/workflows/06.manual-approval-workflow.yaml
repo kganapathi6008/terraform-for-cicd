@@ -1,4 +1,4 @@
-name: 05.authorised-workflow
+name: 06. Manual Approval Workflow
 
 on:
   workflow_dispatch:
