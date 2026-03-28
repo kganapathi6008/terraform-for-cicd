@@ -22,7 +22,7 @@ jobs:
 
     env:
       # 👇 Define users cleanly here
-      ALLOWED_USERS: "ganapathi surya john"
+      ALLOWED_USERS: "kganapathi6008 surya john"
 
 
 
