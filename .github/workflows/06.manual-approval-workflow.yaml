@@ -63,9 +63,6 @@ jobs:
     # 👇 Apply runs only for DEV
     if: github.event.inputs.environment == 'dev'
 
-    # 👇 This triggers manual approval
-    environment: dev
-
     env:
       BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
 
