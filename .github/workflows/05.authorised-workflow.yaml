@@ -17,8 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # 👇 Comma-separated users
-      ALLOWED_USERS: "kganapathi6008,surya,john"
+      ALLOWED_USERS: "kganapathi600823145,surya,john"
 
     steps:
       - name: Check User Authorization
