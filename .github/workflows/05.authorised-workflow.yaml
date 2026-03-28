@@ -11,14 +11,40 @@ on:
 jobs:
   authorize:
     runs-on: ubuntu-latest
+    # steps:
+    #   - name: Check User Authorization
+    #     run: |
+    #       ALLOWED_USERS="ganapathi surya"
+    #       if [[ ! $ALLOWED_USERS =~ (^|[[:space:]])${ { github.actor } }($|[[:space:]]) ]]; then
+    #         echo "User ${{ github.actor }} is not authorized to run this pipeline."
+    #         exit 1
+    #       fi
+
+    env:
+      # 👇 Define users cleanly here
+      ALLOWED_USERS: "ganapathi surya john"
+
+
+
     steps:
       - name: Check User Authorization
         run: |
-          ALLOWED_USERS="ganapathi surya"
-          if [[ ! $ALLOWED_USERS =~ (^|[[:space:]])${ { github.actor } }($|[[:space:]]) ]]; then
-            echo "User ${{ github.actor }} is not authorized to run this pipeline."
-            exit 1
-          fi
+          ACTOR="${{ github.actor }}"
+          USERS=($ALLOWED_USERS)
+
+          echo "Triggered by: $ACTOR"
+          echo "Allowed users: ${USERS[@]}"
+
+          for user in "${USERS[@]}"; do
+            if [[ "$user" == "$ACTOR" ]]; then
+              echo "User is authorized"
+              exit 0
+            fi
+          done
+
+          echo "User $ACTOR is not authorized to run this pipeline."
+          exit 1
+
 
   terraform:
     needs: authorize  # Only runs if the 'authorize' job succeeds
