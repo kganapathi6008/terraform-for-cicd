@@ -35,7 +35,6 @@ jobs:
   terraform-plan:
     needs: authorize
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
 
     env:
       BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
@@ -58,10 +57,12 @@ jobs:
   terraform-apply:
     needs: terraform-plan
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
 
-    # 👇 Apply runs only for DEV
+    # 👇 Apply only for dev
     if: github.event.inputs.environment == 'dev'
+
+    # 👇 ONLY here we attach environment → triggers approval
+    environment: dev
 
     env:
       BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
