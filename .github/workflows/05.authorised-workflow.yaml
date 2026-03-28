@@ -1,0 +1,57 @@
+name: 05.authorised-workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [dev, stage, prod]
+        default: dev
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check User Authorization
+        run: |
+          ALLOWED_USERS="ganapathi surya"
+          if [[ ! $ALLOWED_USERS =~ (^|[[:space:]])${ { github.actor } }($|[[:space:]]) ]]; then
+            echo "User ${{ github.actor }} is not authorized to run this pipeline."
+            exit 1
+          fi
+
+  terraform:
+    needs: authorize  # Only runs if the 'authorize' job succeeds
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    # ... rest of your steps ...
+
+    env:
+      BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        run: terraform init -backend-config=${{ env.BACKEND_FILE }}
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan
