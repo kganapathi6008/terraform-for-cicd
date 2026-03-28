@@ -1,4 +1,4 @@
-name: manual-workflow
+name: 01.manual-workflow
 
 on:
   workflow_dispatch:                  # This allows you to manually trigger the workflow from the GitHub Actions tab in your repository. You can also specify other triggers like push or pull_request if you want the workflow to run automatically on those events.

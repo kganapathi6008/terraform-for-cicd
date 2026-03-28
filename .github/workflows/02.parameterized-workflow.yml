@@ -1,4 +1,4 @@
-name: manual-workflow
+name: 02.parameterized-workflow
 
 on:
   workflow_dispatch:
