@@ -1,0 +1,82 @@
+name: 05.authorised-workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select Environment"
+        type: choice
+        options: [dev, stage, prod]
+        default: dev
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+
+    env:
+      ALLOWED_USERS: "kganapathi6008,surya,john"
+
+    steps:
+      - name: Check User Authorization
+        run: |
+          ACTOR="${{ github.actor }}"
+          IFS=',' read -ra USERS <<< "$ALLOWED_USERS"
+
+          for user in "${USERS[@]}"; do
+            if [[ "$user" == "$ACTOR" ]]; then
+              echo "User is authorized"
+              exit 0
+            fi
+          done
+
+          echo "User $ACTOR is not authorized"
+          exit 1
+
+  terraform-plan:
+    needs: authorize
+    runs-on: ubuntu-latest
+
+    env:
+      BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - run: terraform init -backend-config=${{ env.BACKEND_FILE }}
+      - run: terraform validate
+      - run: terraform plan
+
+  terraform-apply:
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+
+    # 👇 Apply runs only for DEV
+    if: github.event.inputs.environment == 'dev'
+
+    # 👇 This triggers manual approval
+    environment: dev
+
+    env:
+      BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - run: terraform init -backend-config=${{ env.BACKEND_FILE }}
+      - run: terraform apply -auto-approve
