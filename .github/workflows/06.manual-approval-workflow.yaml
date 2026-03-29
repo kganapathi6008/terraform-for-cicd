@@ -35,7 +35,7 @@ jobs:
   terraform-plan:
     needs: authorize
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    # environment: ${{ github.event.inputs.environment }}
 
     env:
       BACKEND_FILE: ${{ github.event.inputs.environment }}-backend.hcl
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
 
-    # 👇 Apply runs only for DEV
+    # Apply runs only for DEV
     if: github.event.inputs.environment == 'dev'
 
     env:
