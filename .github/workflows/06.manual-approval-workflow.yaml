@@ -78,4 +78,4 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - run: terraform init -backend-config=${{ env.BACKEND_FILE }}
-      - run: terraform apply -auto-approve
+      - run: terraform destroy -auto-approve
